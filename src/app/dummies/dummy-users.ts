@@ -1,3 +1,5 @@
+export type User = (typeof DUMMY_USERS)[0];
+
 export const DUMMY_USERS = [
   {
     id: 'u1',
