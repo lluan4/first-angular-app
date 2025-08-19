@@ -1,5 +1,20 @@
-import { Component, EventEmitter, Output, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TASKS_SERVICE } from '../tasks.contract';
+import { User } from '../../dummies/dummy-users';
+
+export interface NewTaskData {
+  title: string;
+  summary: string;
+  dueDate: string;
+}
 
 @Component({
   selector: 'app-add-task',
@@ -8,12 +23,11 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './add-task.component.css',
 })
 export class AddTaskComponent {
+  private _services = inject(TASKS_SERVICE);
+
+  @Input({ required: true }) selectedUser?: User;
   @Output() cancel = new EventEmitter<void>();
-  @Output() add = new EventEmitter<{
-    title: string;
-    summary: string;
-    dueDate: string;
-  }>();
+  @Output() add = new EventEmitter<NewTaskData>();
 
   enteredTitle = '';
   enteredSummary = '';
@@ -32,7 +46,6 @@ export class AddTaskComponent {
       summary: this.enteredSummary,
       dueDate: this.enteredDueDate,
     };
-    this.add.emit(taskData);
-    console.log('Task Created:', taskData);
+    this._services.onAdd(taskData, this.selectedUser!, this.cancel);
   }
 }

@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
+import { Task } from '../dummies/dummy-tasks ';
 import { User } from '../dummies/dummy-users';
+import { AddTaskComponent, NewTaskData } from './add-task/add-task.component';
 import { TaskComponent } from './task/task.component';
-import { DUMMY_TASKS, Task } from '../dummies/dummy-tasks ';
-import { AddTaskComponent } from './add-task/add-task.component';
+import { ITasksService, TASKS_SERVICE } from './tasks.contract';
 
 @Component({
   selector: 'app-tasks',
@@ -17,19 +18,10 @@ export class TasksComponent {
   @Output() addTask = new EventEmitter<void>();
   @Output() cancelAddTask = new EventEmitter<void>();
 
-  tasks: Task[] = DUMMY_TASKS;
-
-  get getSelectedUser(): User | undefined {
-    return this.selectedUser;
-  }
+  constructor(@Inject(TASKS_SERVICE) private _services: ITasksService) {}
 
   get getTasks(): Task[] {
-    return this.tasks.filter((task) => task.userId === this.selectedUser?.id);
-  }
-
-  onCompleteTask(task: Task): void {
-    console.log(`Task completed: ${task.title}`);
-    this.tasks = this.tasks.filter((t) => t.id !== task.id);
+    return this._services.getTasks(this.selectedUser);
   }
 
   onCancelAddTask(): void {
@@ -40,5 +32,13 @@ export class TasksComponent {
     this.addTask.emit();
   }
 
-  onAdd(): void {}
+  onAdd(taskData: NewTaskData) {
+    this._services.getAllTasks().push({
+      ...taskData,
+      id: Math.random().toString(),
+      userId: this.selectedUser?.id || '',
+    });
+
+    this.onCancelAddTask();
+  }
 }
